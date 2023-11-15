@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
-const url = require("url");
 require("dotenv").config();
 
 const port = process.env.PORT || 3555;
@@ -23,26 +22,6 @@ function formatNumber(num) {
 }
 
 //routes
-app.get("/api/search/:query", async (req, res) => {
-  try {
-    //add API key and Query strings
-    const params = new URLSearchParams({
-      access_token: process.env.API_KEY,
-      ...url.parse(req.url, true).query,
-    });
-    const location = req.params.query;
-    const results = await axios(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${location}.json?${params}&types=country`
-    );
-    const data = results.data.features;
-    res.status(200).json(data);
-  } catch (err) {
-    res.status(500).json({
-      error: err.message,
-    });
-  }
-});
-
 app.get("/api/country/:query", async (req, res) => {
   try {
     const code = req.params.query;

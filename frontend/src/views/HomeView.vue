@@ -31,72 +31,79 @@ import { LMap, LTileLayer, LGeoJson, LPopup } from "@vue-leaflet/vue-leaflet";
 import { countries } from "../data/index";
 import axios from "axios";
 import CountryPopUpVue from "../components/CountryPopUp.vue";
+import { ref } from "vue";
 
 export default {
   name: "HomeView",
   components: { LMap, LTileLayer, LGeoJson, LPopup, CountryPopUpVue },
-  data() {
-    var self = this;
-    return {
-      countryData: [],
-      zoom: 4,
-      url: `https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${process.env.VUE_APP_API_KEY}`,
-      mapOptions: {
-        doubleClickZoom: false,
-        worldCopyJump: false,
-        maxBounds: [
-          [-90, -180],
-          [90, 180],
-        ],
-        maxBoundsViscosity: 1.0,
+  setup() {
+    const zoom = ref(4);
+    const countryData = ref([]);
+    const url = ref(
+      `https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${process.env.VUE_APP_API_KEY}`
+    );
+    const mapOptions = ref({
+      doubleClickZoom: false,
+      worldCopyJump: false,
+      maxBounds: [
+        [-90, -180],
+        [90, 180],
+      ],
+      maxBoundsViscosity: 1.0,
+    });
+    const tileOptions = ref({
+      maxZoom: 7,
+      minZoom: 2,
+      attribution:
+        '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      id: "mapbox/streets-v11",
+      tileSize: 512,
+      zoomOffset: -1,
+      accessToken: process.env.VUE_APP_API_KEY,
+      worldCopyJump: false,
+      doubleClickZoom: false,
+      maxBounds: [
+        [-90, -180],
+        [90, 180],
+      ],
+      maxBoundsViscosity: 1.0,
+    });
+    const geoJson = ref(countries);
+    const geoJsonOptionStyle = ref({
+      opacity: 1,
+      weight: 1,
+      fillOpacity: 0,
+    });
+    const geoJsonOptions = ref({
+      onEachFeature: function onEachFeature(feature, layer) {
+        layer.on("click", async (e) => {
+          let code = e.target.feature.properties.ISO_A3;
+          const admin = e.target.feature.properties.ADMIN;
+          admin === "Northern Cyprus"
+            ? (code = "CYP")
+            : admin === "Somaliland"
+            ? (code = "SOM")
+            : code;
+          const data = await axios.get(
+            `http://localhost:3555/api/country/${code}`
+          );
+          setCountryData(data.data);
+        });
       },
-      tileOptions: {
-        maxZoom: 6,
-        minZoom: 2,
-        attribution:
-          '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        id: "mapbox/streets-v11",
-        tileSize: 512,
-        zoomOffset: -1,
-        accessToken: process.env.VUE_APP_API_KEY,
-        worldCopyJump: false,
-        doubleClickZoom: false,
-        maxBounds: [
-          [-90, -180],
-          [90, 180],
-        ],
-        maxBoundsViscosity: 1.0,
-      },
-      geoJson: countries,
-      geoJsonOptions: {
-        onEachFeature: function onEachFeature(feature, layer) {
-          layer.on("click", async (e) => {
-            let code = e.target.feature.properties.ISO_A3;
-            const admin = e.target.feature.properties.ADMIN;
-            admin === "Northern Cyprus"
-              ? (code = "CYP")
-              : admin === "Somaliland"
-              ? (code = "SOM")
-              : code;
-            const data = await axios.get(
-              `http://localhost:3555/api/country/${code}`
-            );
-            console.log(data.data);
-            self.check(data.data);
-          });
-        },
-      },
-      geoJsonOptionStyle: {
-        opacity: 1,
-        weight: 1,
-        fillOpacity: 0,
-      },
+    });
+    const setCountryData = (data) => {
+      countryData.value = data;
     };
-  },
-  methods: {
-    check(data) {
-      this.countryData = data;
-    },
+    return {
+      zoom,
+      mapOptions,
+      tileOptions,
+      url,
+      geoJson,
+      geoJsonOptionStyle,
+      geoJsonOptions,
+      countryData,
+    };
   },
 };
 </script>
