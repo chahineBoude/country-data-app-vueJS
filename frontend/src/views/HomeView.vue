@@ -18,7 +18,11 @@
         :optionsStyle="geoJsonOptionStyle"
       >
         <l-popup>
-          <CountryPopUpVue :countryData="countryData" />
+          <CountryPopUpVue
+            :countryData="countryData"
+            :country="country"
+            :countryCode="countryCode"
+          />
         </l-popup>
       </l-geo-json>
     </l-map>
@@ -31,14 +35,21 @@ import { LMap, LTileLayer, LGeoJson, LPopup } from "@vue-leaflet/vue-leaflet";
 import { countries } from "../data/index";
 import axios from "axios";
 import CountryPopUpVue from "../components/CountryPopUp.vue";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
+import { getCountryName } from "../app/store";
 
 export default {
   name: "HomeView",
   components: { LMap, LTileLayer, LGeoJson, LPopup, CountryPopUpVue },
+  computed: {
+    country() {
+      return getCountryName().name;
+    },
+  },
   setup() {
     const zoom = ref(4);
     const countryData = ref([]);
+    const countryCode = ref("");
     const url = ref(
       `https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=${process.env.VUE_APP_API_KEY}`
     );
@@ -87,13 +98,21 @@ export default {
           const data = await axios.get(
             `http://localhost:3555/api/country/${code}`
           );
+          getCountryName().change(data.data.nameCom);
           setCountryData(data.data);
+          setCountryCode(data.data.countryCode);
         });
       },
     });
     const setCountryData = (data) => {
       countryData.value = data;
     };
+    const setCountryCode = (code) => {
+      countryCode.value = code;
+    };
+    onMounted(() => {
+      countryCode.value = "dummy";
+    });
     return {
       zoom,
       mapOptions,
@@ -103,6 +122,7 @@ export default {
       geoJsonOptionStyle,
       geoJsonOptions,
       countryData,
+      countryCode,
     };
   },
 };

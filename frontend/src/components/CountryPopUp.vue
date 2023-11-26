@@ -54,12 +54,19 @@
         />
       </div>
     </div>
+    <router-link :to="{ name: 'hello', params: { code: countryCode } }">
+      <button
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      >
+        go to {{ country }} page
+      </button>
+    </router-link>
   </div>
 </template>
 
 <script>
 export default {
-  props: ["countryData"],
+  props: ["countryData", "country", "countryCode"],
 };
 </script>
 

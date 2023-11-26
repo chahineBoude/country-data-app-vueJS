@@ -48,8 +48,40 @@ app.get("/api/country/:query", async (req, res) => {
       flag: response.data[0].flags.svg,
       coa: response.data[0].coatOfArms.svg,
       pop: formatNumber(response.data[0].population),
+      countryCode: response.data[0].cca2.toLowerCase(),
     };
     res.status(200).json(data);
+  } catch (err) {
+    res.status(500).json({
+      error: err.message,
+    });
+  }
+});
+
+app.get("/api/country/:query/league", async (req, res) => {
+  try {
+    const code = req.params.query;
+    console.log(code);
+    const options = {
+      params: {
+        code: code,
+      },
+      headers: {
+        "X-RapidAPI-Key": process.env.FOOTBALL_API_KEY,
+        "X-RapidAPI-Host": "api-football-v1.p.rapidapi.com",
+      },
+    };
+    const response = await axios(
+      `https://api-football-v1.p.rapidapi.com/v3/leagues/`,
+      options
+    );
+    let leagues = [];
+    response.data.response.map((l, i) => {
+      console.log(l.league);
+      leagues[i] = l.league;
+    });
+    console.log(leagues);
+    res.status(200).json(leagues);
   } catch (err) {
     res.status(500).json({
       error: err.message,
