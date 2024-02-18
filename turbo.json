@@ -1,6 +1,7 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env.*local"],
+  "globalDotEnv": ["VUE_APP_API_KEY", ".env"],
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],

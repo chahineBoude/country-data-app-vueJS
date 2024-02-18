@@ -93,8 +93,8 @@ export default {
           admin === "Northern Cyprus"
             ? (code = "CYP")
             : admin === "Somaliland"
-            ? (code = "SOM")
-            : code;
+              ? (code = "SOM")
+              : code;
           const data = await axios.get(
             `http://localhost:3555/api/country/${code}`
           );
