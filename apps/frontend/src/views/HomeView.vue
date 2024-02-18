@@ -95,12 +95,13 @@ export default {
             : admin === "Somaliland"
               ? (code = "SOM")
               : code;
-          const data = await axios.get(
+          /* const data = await axios.get(
             `http://localhost:3555/api/country/${code}`
-          );
-          getCountryName().change(data.data.nameCom);
-          setCountryData(data.data);
-          setCountryCode(data.data.countryCode);
+          ); */
+          const data = await getCountryInfo(code);
+          getCountryName().change(data.nameCom);
+          setCountryData(data);
+          setCountryCode(data.countryCode);
         });
       },
     });
@@ -110,6 +111,48 @@ export default {
     const setCountryCode = (code) => {
       countryCode.value = code;
     };
+
+    function formatNumber(num) {
+      if (num >= 1000000000) {
+        return (num / 1000000000).toFixed(2) + "B";
+      } else if (num >= 1000000) {
+        return (num / 1000000).toFixed(2) + "M";
+      } else if (num >= 1000) {
+        return (num / 1000).toFixed(2) + "k";
+      } else {
+        return num;
+      }
+    }
+
+    const getCountryInfo = async (code) => {
+      const response = await axios(
+        `https://restcountries.com/v3.1/alpha/${code}`
+      );
+      const native = response.data[0].name.nativeName;
+      const nArray = Object.values(native);
+      let n = [];
+      nArray.map((name) => {
+        n.push(name.official);
+      });
+      let capital = response.data[0].capital;
+      let cArray = Object.values(capital);
+      let c = [];
+      cArray.map((capital) => {
+        c.push(capital);
+      });
+      const data = {
+        nameOff: response.data[0].name.official,
+        nameCom: response.data[0].name.common,
+        nameNative: n,
+        capital: c,
+        flag: response.data[0].flags.svg,
+        coa: response.data[0].coatOfArms.svg,
+        pop: formatNumber(response.data[0].population),
+        countryCode: response.data[0].cca2.toLowerCase(),
+      };
+      return data;
+    };
+
     onMounted(() => {
       countryCode.value = "dummy";
     });
